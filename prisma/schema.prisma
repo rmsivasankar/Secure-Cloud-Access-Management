@@ -1,0 +1,89 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String  @id @default(uuid())
+  name      String?
+  email     String  @unique
+  password  String?
+  role      Role    @default(USER)
+  createdAt DateTime @default(now())
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model LoginAttempt {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  attempts  Int      @default(0)
+  timestamp DateTime @default(now())
+}
+
+model SecurityLog {
+  id        String   @id @default(uuid())
+  type      String
+  message   String
+  timestamp DateTime @default(now())
+  ipAddress String?
+  userId    String?
+  details   String?
+}
+
+model OTP {
+  id        String   @id @default(uuid())
+  email     String
+  code      String
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+  used      Boolean  @default(false)
+}
+
+model SecurityAttack {
+  id          String   @id @default(uuid())
+  type        String   // SQL_INJECTION, XSS, BRUTE_FORCE
+  payload     String
+  timestamp   DateTime @default(now())
+  ipAddress   String?
+  userAgent   String?
+  status      String   // DETECTED, BLOCKED, SUCCESSFUL
+  description String?
+}
+
+model IPAccess {
+  id          String   @id @default(uuid())
+  ipAddress   String   @unique
+  type        String   // ALLOWED, BLOCKED
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?  // User ID who created this rule
+}
+
+model SecurityAlert {
+  id          String   @id @default(uuid())
+  severity    String   // HIGH, MEDIUM, LOW
+  title       String
+  description String
+  status      String   // NEW, ACKNOWLEDGED, RESOLVED
+  timestamp   DateTime @default(now())
+  resolvedAt  DateTime?
+  resolvedBy  String?  // User ID who resolved this alert
+}
+
+model SecurityMetric {
+  id        String   @id @default(uuid())
+  name      String
+  value     Float
+  unit      String?
+  timestamp DateTime @default(now())
+  category  String?  // PERFORMANCE, SECURITY, AVAILABILITY
+}
